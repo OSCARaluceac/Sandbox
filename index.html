@@ -1,3 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskFlow // Gremio</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        gold: '#c5a028',
+                        wood: '#3d2b1f',
+                        parchment: {
+                            DEFAULT: '#f4f1ea',
+                            light: '#faf9f6'
+                        }
+                    },
+                    fontFamily: {
+                        pixel: ['"Press Start 2P"', 'cursive'],
+                        serif: ['Georgia', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        /* Optimización de scrollbar para estética técnica */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f4f1ea; }
+        ::-webkit-scrollbar-thumb { background: #c5a028; }
+        .dark ::-webkit-scrollbar-track { background: #18181b; }
+    </style>
+</head>
 <body class="bg-parchment-light dark:bg-zinc-950 text-stone-800 dark:text-stone-200 font-serif transition-colors duration-500 min-h-screen p-4 flex justify-center">
 
     <div class="w-full max-w-7xl border-4 border-wood dark:border-stone-800 bg-parchment dark:bg-zinc-900 shadow-2xl relative transition-all duration-500">
