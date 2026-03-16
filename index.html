@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TaskFlow // Gremio</title>
-    
+
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Lora:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
 
     <script>
         tailwind.config = {
@@ -15,28 +15,47 @@
             theme: {
                 extend: {
                     colors: {
+                        wood: '#5d4037',
                         gold: '#c5a028',
-                        wood: '#3d2b1f',
                         parchment: {
-                            DEFAULT: '#f4f1ea',
-                            light: '#faf9f6'
+                            light: '#fdf6e3',
+                            dark: '#121212',
+                            DEFAULT: '#fafaf0'
                         }
                     },
                     fontFamily: {
                         pixel: ['"Press Start 2P"', 'cursive'],
-                        serif: ['Georgia', 'serif']
+                        serif: ['Lora', 'serif'],
                     }
                 }
             }
         }
     </script>
-    
+
     <style>
-        /* Optimización de scrollbar para estética técnica */
+        /* Estilos adicionales para consistencia visual */
+        body {
+            image-rendering: pixelated;
+        }
+
+        /* Scrollbar personalizada estética Gremio */
         ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #f4f1ea; }
-        ::-webkit-scrollbar-thumb { background: #c5a028; }
-        .dark ::-webkit-scrollbar-track { background: #18181b; }
+        ::-webkit-scrollbar-track { background: #fafaf0; }
+        ::-webkit-scrollbar-thumb { background: #5d4037; }
+        .dark ::-webkit-scrollbar-track { background: #121212; }
+        .dark ::-webkit-scrollbar-thumb { background: #c5a028; }
+
+        /* Estilo para el botón de Rango S (opcional si no usas style.css externo) */
+        .boton-rango-s {
+            animation: brilloDorado 2.5s ease-in-out infinite;
+            background: linear-gradient(120deg, #f6e27a, #c5a028, #f6e27a);
+            background-size: 200% 200%;
+        }
+        @keyframes brilloDorado {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
     </style>
 </head>
 <body class="bg-parchment-light dark:bg-zinc-950 text-stone-800 dark:text-stone-200 font-serif transition-colors duration-500 min-h-screen p-4 flex justify-center">
