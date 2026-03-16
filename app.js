@@ -169,26 +169,33 @@ window.editarMision = (id) => {
     }
 };
 
-window.ordenarPorPrioridad = (btn) => {
-    // 1. Ejecución de la lógica de ordenación
-    const orden = { 'S': 5, 'A': 4, 'B': 3, 'C': 2, 'D': 1 };
-    listaMisiones.sort((a, b) => orden[b.rango] - orden[a.rango]);
+// Variable para rastrear si el ordenamiento está activo
+let ordenActivo = false;
 
-    // 2. Sincronización visual (Efecto de "Activado")
-    // Buscamos el botón por ID si 'btn' no llega correctamente
-    const boton = btn || document.getElementById('btn-ordenar');
-    
-    if (boton) {
-        // Alternamos las clases para que se quede dorado/blanco
-        boton.classList.toggle('bg-gold');
-        boton.classList.toggle('text-white');
-        
-        // Añadimos un pequeño efecto de escala para confirmar el clic
-        boton.classList.add('scale-95');
-        setTimeout(() => boton.classList.remove('scale-95'), 100);
+window.ordenarPorPrioridad = (btn) => {
+    // 1. Alternar estado
+    ordenActivo = !ordenActivo;
+
+    // 2. Aplicar lógica de ordenación (solo si está activo)
+    if (ordenActivo) {
+        const ordenPrioridad = { 'S': 5, 'A': 4, 'B': 3, 'C': 2, 'D': 1 };
+        listaMisiones.sort((a, b) => ordenPrioridad[b.rango] - ordenPrioridad[a.rango]);
+    } else {
+        // Si se desactiva, volvemos al orden por fecha (ID)
+        listaMisiones.sort((a, b) => b.id - a.id);
     }
 
-    // 3. Persistencia y actualización del tablón
+    // 3. Feedback Visual (Igual que tus filtros)
+    const boton = btn || document.getElementById('btn-ordenar');
+    if (boton) {
+        if (ordenActivo) {
+            boton.classList.add('bg-gold', 'text-white');
+        } else {
+            boton.classList.remove('bg-gold', 'text-white');
+        }
+    }
+
+    // 4. Actualizar la interfaz
     guardarYRender();
 };
 
