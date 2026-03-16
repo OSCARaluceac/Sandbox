@@ -169,9 +169,26 @@ window.editarMision = (id) => {
     }
 };
 
-window.ordenarPorPrioridad = () => {
+window.ordenarPorPrioridad = (btn) => {
+    // 1. Ejecución de la lógica de ordenación
     const orden = { 'S': 5, 'A': 4, 'B': 3, 'C': 2, 'D': 1 };
     listaMisiones.sort((a, b) => orden[b.rango] - orden[a.rango]);
+
+    // 2. Sincronización visual (Efecto de "Activado")
+    // Buscamos el botón por ID si 'btn' no llega correctamente
+    const boton = btn || document.getElementById('btn-ordenar');
+    
+    if (boton) {
+        // Alternamos las clases para que se quede dorado/blanco
+        boton.classList.toggle('bg-gold');
+        boton.classList.toggle('text-white');
+        
+        // Añadimos un pequeño efecto de escala para confirmar el clic
+        boton.classList.add('scale-95');
+        setTimeout(() => boton.classList.remove('scale-95'), 100);
+    }
+
+    // 3. Persistencia y actualización del tablón
     guardarYRender();
 };
 
