@@ -1,12 +1,13 @@
 /**
  * TASKFLOW - Sistema de Gestión de Misiones
- * Versión Final: Optimización de Arquitectura y Seguridad
+ * Versión de Rango S: Integración Total y Estado Persistente
  */
 
 // --- 1. ESTADO GLOBAL (Fuente Única de Verdad) ---
 let listaMisiones = JSON.parse(localStorage.getItem('taskflow_misiones')) || [];
 const filtrosRango = new Set(['D', 'C', 'B', 'A', 'S']);
 const filtrosCategoria = new Set(['Recolección', 'Exploración', 'Captura', 'Escolta', 'Caza']);
+let ordenActivo = false; // Estado del interruptor de prioridad
 
 // --- 2. NÚCLEO DE LA APLICACIÓN (Persistencia y Renderizado) ---
 
@@ -19,17 +20,50 @@ function guardarYRender() {
 }
 
 /**
- * Renderiza la lista de misiones filtrada por texto, rango y categoría.
+ * Renderiza la lista de misiones con filtros y ordenación dinámica.
  */
 function render() {
     const contenedor = document.getElementById('lista-misiones');
-    const busqueda = document.getElementById('filtro-texto').value.toLowerCase();
-    const filtroEstado = document.getElementById('filtro-estado').value;
+    const busquedaInput = document.getElementById('filtro-texto');
+    const filtroEstadoInput = document.getElementById('filtro-estado');
     
-    if (!contenedor) return;
+    if (!contenedor || !busquedaInput || !filtroEstadoInput) return;
+    
+    const busqueda = busquedaInput.value.toLowerCase();
+    const filtroEstado = filtroEstadoInput.value;
+    
     contenedor.innerHTML = '';
 
-    listaMisiones.forEach(mision => {
+    // --- REFUERZO DE LÓGICA DE ORDENACIÓN ---
+    let misionesParaMostrar = [...listaMisiones]; 
+    
+    if (ordenActivo) {
+        const p = { 'S': 5, 'A': 4, 'B': 3, 'C': 2, 'D': 1 };
+        misionesParaMostrar.sort((a, b) => {
+            // Obtenemos el valor numérico del rango, o 0 si no existe
+            const valA = p[a.rango] || 0;
+            const valB = p[b.rango] || 0;
+            return valB - valA; // De mayor (S) a menor (D)
+        });
+        console.log("Ordenación por Rango S-D ejecutada.");
+    } else {
+        misionesParaMostrar.sort((a, b) => b.id - a.id); 
+    }
+
+    // --- Feedback Visual del Botón ---
+    const btnOrdenar = document.getElementById('btn-ordenar');
+    if (btnOrdenar) {
+        if (ordenActivo) {
+            btnOrdenar.classList.add('bg-gold', 'text-white');
+            btnOrdenar.classList.remove('text-gold');
+        } else {
+            btnOrdenar.classList.remove('bg-gold', 'text-white');
+            btnOrdenar.classList.add('text-gold');
+        }
+    }
+
+    // Dibujado de misiones
+    misionesParaMostrar.forEach(mision => {
         const cumpleFiltros = filtrosRango.has(mision.rango) && 
                               filtrosCategoria.has(mision.categoria) && 
                               mision.texto.toLowerCase().includes(busqueda);
@@ -42,12 +76,11 @@ function render() {
             contenedor.appendChild(crearMisionElemento(mision));
         }
     });
+
     actualizarEstadisticas();
 }
-
 /**
  * Crea el nodo HTML para una misión individual.
- * @param {Object} mision - Datos de la misión.
  */
 function crearMisionElemento(mision) {
     const el = document.createElement('div');
@@ -55,7 +88,6 @@ function crearMisionElemento(mision) {
         ? 'opacity-60 grayscale-[0.5] border-stone-400 dark:border-stone-700 bg-stone-100 dark:bg-zinc-800/50' 
         : 'bg-white dark:bg-zinc-800 border-stone-200 dark:border-stone-700 ring-1 ring-gold/20';
 
-    // Eliminamos 'overflow-hidden' temporalmente para asegurar que nada se corte
     el.className = `p-5 border relative hover:scale-[1.01] transition-all duration-300 flex justify-between items-center group ${clasesCompletada}`;
     
     el.innerHTML = `
@@ -84,25 +116,20 @@ function crearMisionElemento(mision) {
 
 // --- 3. GESTIÓN DE ESTADÍSTICAS Y PROGRESO ---
 
-/**
- * Calcula y actualiza el panel de estadísticas y la barra de progreso.
- */
 function actualizarEstadisticas() {
     const total = listaMisiones.length;
     const completadas = listaMisiones.filter(m => m.completada).length;
-    const pendientes = total - completadas;
     const porcentaje = total > 0 ? Math.round((completadas / total) * 100) : 0;
 
-    // Actualizar Panel Numérico
     const statsContainer = document.getElementById('stats-container');
     if (statsContainer) {
         statsContainer.innerHTML = `
             <p class="flex justify-between">TOTAL: <span class="text-stone-800 dark:text-gold">${total}</span></p>
-            <p class="flex justify-between text-blue-600">PENDIENTES: <span>${pendientes}</span></p>
+            <p class="flex justify-between text-blue-600">PENDIENTES: <span>${total - completadas}</span></p>
             <p class="flex justify-between text-green-600">LOGRADAS: <span>${completadas}</span></p>
             
             <div class="mt-4">
-                <div class="flex justify-between font-pixel text-[8px] mb-1">
+                <div class="flex justify-between font-pixel text-[8px] mb-1 text-stone-500">
                     <span>PROGRESO DEL GREMIO</span>
                     <span>${porcentaje}%</span>
                 </div>
@@ -123,12 +150,8 @@ if (formMision) {
         const input = document.getElementById('input-mision');
         const texto = input.value.trim();
 
-        // Validaciones de Seguridad
         if (texto.length < 3) return alert("Misión demasiado corta.");
-        if (listaMisiones.some(m => m.texto.toLowerCase() === texto.toLowerCase())) {
-            return alert("Esa misión ya está en el tablón.");
-        }
-
+        
         listaMisiones.push({
             id: Date.now(),
             texto: texto,
@@ -162,41 +185,16 @@ window.editarMision = (id) => {
     const mision = listaMisiones.find(m => m.id === id);
     if (mision) {
         const nuevoTexto = prompt("Actualiza los detalles de la misión:", mision.texto);
-        if (nuevoTexto && nuevoTexto.trim().length >= 3) {
+        if (nuevoTexto !== null && nuevoTexto.trim().length >= 3) {
             mision.texto = nuevoTexto.trim();
             guardarYRender();
         }
     }
 };
 
-// Variable para rastrear si el ordenamiento está activo
-let ordenActivo = false;
-
-window.ordenarPorPrioridad = (btn) => {
-    // 1. Alternar estado
+window.ordenarPorPrioridad = () => {
     ordenActivo = !ordenActivo;
-
-    // 2. Aplicar lógica de ordenación (solo si está activo)
-    if (ordenActivo) {
-        const ordenPrioridad = { 'S': 5, 'A': 4, 'B': 3, 'C': 2, 'D': 1 };
-        listaMisiones.sort((a, b) => ordenPrioridad[b.rango] - ordenPrioridad[a.rango]);
-    } else {
-        // Si se desactiva, volvemos al orden por fecha (ID)
-        listaMisiones.sort((a, b) => b.id - a.id);
-    }
-
-    // 3. Feedback Visual (Igual que tus filtros)
-    const boton = btn || document.getElementById('btn-ordenar');
-    if (boton) {
-        if (ordenActivo) {
-            boton.classList.add('bg-gold', 'text-white');
-        } else {
-            boton.classList.remove('bg-gold', 'text-white');
-        }
-    }
-
-    // 4. Actualizar la interfaz
-    guardarYRender();
+    render();
 };
 
 // --- 5. CONFIGURACIÓN DE FILTROS E INICIALIZACIÓN ---
@@ -235,7 +233,6 @@ function actualizarEstiloFiltro(btn, activo, tipo) {
     }
 }
 
-// --- MODO OSCURO ---
 function setupTheme() {
     const themeToggle = document.getElementById('theme-toggle');
     const apply = (t) => {
@@ -246,7 +243,6 @@ function setupTheme() {
     apply(localStorage.getItem('task_theme') || 'light');
 }
 
-// --- INICIO ---
 function init() {
     setupTheme();
     setupFiltros();
