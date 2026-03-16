@@ -67,6 +67,9 @@ function crearMisionElemento(mision) {
             <button onclick="toggleMision(${mision.id})" class="px-3 py-2 border border-gold text-gold hover:bg-gold hover:text-white transition-all font-pixel text-[8px]">
                 ${mision.completada ? '↩' : '✓'}
             </button>
+            <button onclick="editarMision(${mision.id})" class="px-3 py-2 border border-stone-300 text-stone-600 hover:bg-stone-200 hover:text-stone-900 transition-all font-pixel text-[8px]">
+                ✎
+            </button>
             <button onclick="eliminarMision(${mision.id})" class="bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white px-3 py-2 font-pixel text-[8px] transition-all">
                 X
             </button>
@@ -148,6 +151,17 @@ window.eliminarMision = (id) => {
     if (confirm("¿Confirmas el descarte de esta misión?")) {
         listaMisiones = listaMisiones.filter(m => m.id !== id);
         guardarYRender();
+    }
+};
+
+window.editarMision = (id) => {
+    const mision = listaMisiones.find(m => m.id === id);
+    if (mision) {
+        const nuevoTexto = prompt("Actualiza los detalles de la misión:", mision.texto);
+        if (nuevoTexto && nuevoTexto.trim().length >= 3) {
+            mision.texto = nuevoTexto.trim();
+            guardarYRender();
+        }
     }
 };
 
