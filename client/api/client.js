@@ -1,6 +1,8 @@
 // client/src/api/client.js
-const API_URL = 'http://localhost:3000/api/v1/tasks';
-
+// Detecta si estamos en local o en producción automáticamente
+const API_URL = window.location.hostname === 'localhost' 
+    ? 'http://localhost:3000/api/v1/tasks' 
+    : '/api/v1/tasks';
 export const taskAPI = {
     // Obtener todas las misiones (GET)
     async getAll() {
