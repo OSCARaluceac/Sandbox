@@ -1,34 +1,76 @@
-// server/src/controllers/task.controller.js
 const taskService = require('../services/task.service');
 
+/**
+ * Obtiene todas las misiones del registro central.
+ */
 const getTasks = (req, res) => {
     const tasks = taskService.getAll();
     res.status(200).json(tasks);
 };
 
+/**
+ * Registra un nuevo contrato validando los parámetros del Gremio.
+ */
 const createTask = (req, res) => {
-    const { title, priority } = req.body;
+    // Extraemos todos los campos que envía el frontend
+    const { title, categoria, rango, priority } = req.body;
 
-    // Validación defensiva estricta
+    // Validación defensiva estricta: No permitiremos datos corruptos
     if (!title || typeof title !== 'string' || title.trim().length < 3) {
-        return res.status(400).json({ error: "El título es obligatorio y debe tener al menos 3 caracteres." });
+        return res.status(400).json({ error: "El título es obligatorio (mínimo 3 caracteres)." });
+    }
+    
+    if (!categoria || !rango) {
+        return res.status(400).json({ error: "Categoría y Rango son campos obligatorios." });
     }
 
-    const newTask = taskService.create({ title, priority: priority || 1 });
+    const newTask = taskService.create({ 
+        title, 
+        categoria, 
+        rango, 
+        priority: priority || 1 
+    });
+    
     res.status(201).json(newTask);
 };
 
+/**
+ * Actualiza el estado de una misión (Completada/Pendiente).
+ */
+const updateTaskStatus = (req, res) => {
+    try {
+        const { id } = req.params;
+        const { completed } = req.body;
+
+        // Validamos que el estado sea un booleano
+        if (typeof completed !== 'boolean') {
+            return res.status(400).json({ error: "El estado debe ser booleano (true/false)." });
+        }
+
+        const updatedTask = taskService.updateStatus(id, completed);
+        res.status(200).json(updatedTask);
+    } catch (error) {
+        if (error.message === 'NOT_FOUND') {
+            return res.status(404).json({ error: "La misión especificada no existe." });
+        }
+        res.status(500).json({ error: "Fallo crítico en el sistema de actualización." });
+    }
+};
+
+/**
+ * Elimina un registro permanentemente.
+ */
 const deleteTask = (req, res) => {
     try {
         const { id } = req.params;
         taskService.remove(id);
-        res.status(204).send(); // 204 significa "Éxito, pero no hay nada que devolver"
+        res.status(204).send(); 
     } catch (error) {
         if (error.message === 'NOT_FOUND') {
-            return res.status(404).json({ error: "La tarea que intentas eliminar no existe." });
+            return res.status(404).json({ error: "La misión que intentas eliminar no existe." });
         }
         res.status(500).json({ error: "Error interno del servidor." });
     }
 };
 
-module.exports = { getTasks, createTask, deleteTask };
+module.exports = { getTasks, createTask, updateTaskStatus, deleteTask };
