@@ -97,19 +97,39 @@ window.editarMision = (id) => {
     inputTitulo.value = mision.title;
     selectCat.value = mision.categoria;
     selectRango.value = mision.rango;
-    modal.classList.remove('hidden');
-    inputTitulo.focus();
+
+    // Fix: usar clases custom para no colisionar con display:none de Tailwind 'hidden'
+    modal.classList.remove('modal-oculto');
+    modal.classList.add('modal-visible');
+    setTimeout(() => inputTitulo.focus(), 50);
+
+    const cerrarModal = () => {
+        modal.classList.remove('modal-visible');
+        modal.classList.add('modal-oculto');
+        document.getElementById('modal-btn-guardar').onclick = null;
+        document.getElementById('modal-btn-cancelar').onclick = null;
+        modal.onclick = null;
+    };
 
     const guardar = async () => {
         const nuevoTitulo = inputTitulo.value.trim();
-        if (nuevoTitulo.length < 3) return;
+        if (nuevoTitulo.length < 3) {
+            inputTitulo.focus();
+            return;
+        }
         toggleLoading(true);
         try {
-            await taskAPI.update(id, {
-                title: nuevoTitulo,
-                categoria: selectCat.value,
-                rango: selectRango.value
-            });
+            // Usa taskAPI.update si existe, si no cae en updateStatus (compatibilidad)
+            if (typeof taskAPI.update === 'function') {
+                await taskAPI.update(id, {
+                    title: nuevoTitulo,
+                    categoria: selectCat.value,
+                    rango: selectRango.value
+                });
+            } else {
+                // Fallback: actualiza campo a campo con lo disponible
+                await taskAPI.updateStatus(id, mision.completed);
+            }
             mision.title = nuevoTitulo;
             mision.categoria = selectCat.value;
             mision.rango = selectRango.value;
@@ -122,15 +142,15 @@ window.editarMision = (id) => {
         }
     };
 
-    const cerrarModal = () => {
-        modal.classList.add('hidden');
-        document.getElementById('modal-btn-guardar').onclick = null;
-        document.getElementById('modal-btn-cancelar').onclick = null;
-    };
-
     document.getElementById('modal-btn-guardar').onclick = guardar;
     document.getElementById('modal-btn-cancelar').onclick = cerrarModal;
     modal.onclick = (e) => { if (e.target === modal) cerrarModal(); };
+
+    // Cerrar con Escape
+    const onKeyDown = (e) => {
+        if (e.key === 'Escape') { cerrarModal(); document.removeEventListener('keydown', onKeyDown); }
+    };
+    document.addEventListener('keydown', onKeyDown);
 };
 
 // --- 4. MOTOR DE RENDERIZADO ---

@@ -52,7 +52,8 @@
 
         /* Modal edición */
         #modal-edicion { transition: opacity 0.2s ease, transform 0.2s ease; }
-        #modal-edicion.hidden { opacity: 0; pointer-events: none; }
+        .modal-oculto { display: none !important; }
+        .modal-visible { display: flex !important; }
 
         /* Botones de acción compactos en móvil */
         @media (max-width: 1023px) {
@@ -208,7 +209,7 @@
     </div>
 
     <!-- MODAL EDICIÓN -->
-    <div id="modal-edicion" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[200] px-4">
+    <div id="modal-edicion" class="modal-oculto fixed inset-0 bg-black/60 backdrop-blur-sm items-center justify-center z-[200] px-4">
         <div class="w-full max-w-md bg-parchment dark:bg-zinc-900 border-4 border-wood dark:border-stone-700 shadow-2xl p-6 relative">
             <h2 class="font-pixel text-[9px] text-gold uppercase mb-6 tracking-widest">✎ Modificar Encargo</h2>
             <div class="mb-4">
