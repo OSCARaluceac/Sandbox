@@ -53,7 +53,6 @@ async function agregarMision(title, categoria, rango) {
     }
 }
 
-// ACTUALIZACIÓN NECESARIA: Persistencia del toggle
 window.toggleMision = async (id) => {
     const mision = listaMisiones.find(m => m.id === id);
     if (!mision) return;
@@ -62,7 +61,6 @@ window.toggleMision = async (id) => {
     toggleLoading(true);
     
     try {
-        // Enviamos la actualización al servidor mediante PATCH
         await taskAPI.updateStatus(id, nuevoEstado);
         mision.completed = nuevoEstado;
         render();
@@ -314,7 +312,6 @@ function cerrarDrawer() {
 btnDrawer?.addEventListener('click', abrirDrawer);
 overlay?.addEventListener('click', cerrarDrawer);
 
-// Cerrar drawer al seleccionar filtro en móvil
 drawer?.addEventListener('click', (e) => {
     if (e.target.tagName === 'BUTTON' && window.innerWidth < 1024) {
         setTimeout(cerrarDrawer, 150);
@@ -323,11 +320,11 @@ drawer?.addEventListener('click', (e) => {
 
 // --- MISIONES DE ÉLITE ---
 const MISIONES_ELITE = [
-    { title: "Cazar al Dragón Escarlata del Pico Eterno",    categoria: "Caza",       rango: "S" },
-    { title: "Escoltar a la Embajadora al Reino del Norte",  categoria: "Escolta",    rango: "A" },
+    { title: "Cazar al Dragón Escarlata del Pico Eterno",    categoria: "Caza",        rango: "S" },
+    { title: "Escoltar a la Embajadora al Reino del Norte",  categoria: "Escolta",     rango: "A" },
     { title: "Explorar las Ruinas Sumergidas de Valdris",    categoria: "Exploración", rango: "B" },
     { title: "Recolectar Hongos de la Cueva Sombría",        categoria: "Recolección", rango: "C" },
-    { title: "Capturar al Bandido Conocido como La Sombra",  categoria: "Captura",    rango: "D" },
+    { title: "Capturar al Bandido Conocido como La Sombra",  categoria: "Captura",     rango: "D" },
 ];
 
 document.getElementById('btn-elite')?.addEventListener('click', async () => {
@@ -349,19 +346,18 @@ document.getElementById('btn-elite')?.addEventListener('click', async () => {
     }
 });
 
-<<<<<<< HEAD
 // --- ELIMINAR TODO ---
 document.getElementById('btn-eliminar-todo')?.addEventListener('click', async () => {
-    const visibles = listaMisiones.filter(m => {
-        const busqueda = document.getElementById('filtro-texto')?.value.toLowerCase() || "";
-        const filtroEstado = document.getElementById('filtro-estado')?.value || "todas";
-        return filtrosRango.has(m.rango) &&
-               filtrosCategoria.has(m.categoria) &&
-               m.title.toLowerCase().includes(busqueda) &&
-               (filtroEstado === 'todas' ||
-               (filtroEstado === 'completadas' && m.completed) ||
-               (filtroEstado === 'pendientes' && !m.completed));
-    });
+    const busqueda = document.getElementById('filtro-texto')?.value.toLowerCase() || "";
+    const filtroEstado = document.getElementById('filtro-estado')?.value || "todas";
+    const visibles = listaMisiones.filter(m =>
+        filtrosRango.has(m.rango) &&
+        filtrosCategoria.has(m.categoria) &&
+        m.title.toLowerCase().includes(busqueda) &&
+        (filtroEstado === 'todas' ||
+        (filtroEstado === 'completadas' && m.completed) ||
+        (filtroEstado === 'pendientes' && !m.completed))
+    );
     if (visibles.length === 0) return;
     if (!confirm(`¿Retirar ${visibles.length} encargo(s) del tablón?`)) return;
     toggleLoading(true);
@@ -378,8 +374,6 @@ document.getElementById('btn-eliminar-todo')?.addEventListener('click', async ()
     }
 });
 
-=======
->>>>>>> 11bb78d007006f4ae5807636878a6a693c3d9c32
 document.addEventListener('DOMContentLoaded', () => {
     setupTheme();
     setupFiltros();
