@@ -349,6 +349,7 @@ document.getElementById('btn-elite')?.addEventListener('click', async () => {
     }
 });
 
+<<<<<<< HEAD
 // --- ELIMINAR TODO ---
 document.getElementById('btn-eliminar-todo')?.addEventListener('click', async () => {
     const visibles = listaMisiones.filter(m => {
@@ -377,6 +378,8 @@ document.getElementById('btn-eliminar-todo')?.addEventListener('click', async ()
     }
 });
 
+=======
+>>>>>>> 11bb78d007006f4ae5807636878a6a693c3d9c32
 document.addEventListener('DOMContentLoaded', () => {
     setupTheme();
     setupFiltros();
