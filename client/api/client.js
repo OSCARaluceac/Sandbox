@@ -19,9 +19,9 @@ export const taskAPI = {
     },
 
     /**
-     * Registra una nueva misión en el servidor central.
+     * Registra una nueva misión con su botín en el servidor central.
      */
-    async create(title, categoria, rango) {
+    async create(title, categoria, rango, cobres = 0, items = []) {
         const response = await fetch(API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -29,7 +29,7 @@ export const taskAPI = {
                 title, 
                 categoria, 
                 rango,
-                priority: rango === 'S' ? 5 : 1 
+                recompensas: { cobres, items }
             })
         });
         if (!response.ok) throw new Error('No se pudo guardar la misión en el servidor.');
@@ -37,7 +37,7 @@ export const taskAPI = {
     },
 
     /**
-     * Actualiza el estado de cumplimiento de una misión (Fase 3).
+     * Actualiza el estado de cumplimiento de una misión.
      */
     async updateStatus(id, completed) {
         const response = await fetch(`${API_URL}/${id}`, { 
@@ -45,8 +45,33 @@ export const taskAPI = {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ completed })
         });
-        
         if (!response.ok) throw new Error('Error al actualizar el estado.');
+        return await response.json();
+    },
+
+    /**
+     * Modifica los metadatos completos de una misión (Edición).
+     */
+    async update(id, data) {
+        const response = await fetch(`${API_URL}/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        if (!response.ok) throw new Error('Error al modificar los parámetros del encargo.');
+        return await response.json();
+    },
+
+    /**
+     * Recluta al usuario activo para un encargo específico.
+     */
+    async join(id) {
+        // Enviaremos una señal POST a la ruta de participación
+        const response = await fetch(`${API_URL}/${id}/join`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        if (!response.ok) throw new Error('Interferencia al intentar unirse a la misión.');
         return await response.json();
     },
 

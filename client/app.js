@@ -40,14 +40,15 @@ async function loadTasks() {
     }
 }
 
-async function agregarMision(title, categoria, rango) {
+async function agregarMision(title, categoria, rango, cobres, items) {
     toggleLoading(true);
     try {
-        const nueva = await taskAPI.create(title, categoria, rango);
+        // La API ahora transmite el botín al servidor
+        const nueva = await taskAPI.create(title, categoria, rango, cobres, items);
         listaMisiones.push(nueva);
         render();
     } catch (error) {
-        showErrorMessage("No se pudo publicar el contrato.");
+        showErrorMessage("Interferencia: No se pudo publicar el contrato con sus recompensas.");
     } finally {
         toggleLoading(false);
     }
@@ -346,11 +347,22 @@ window.ordenarPorPrioridad = () => {
 const formMision = document.getElementById('form-mision');
 formMision?.addEventListener('submit', async (e) => {
     e.preventDefault();
+    
+    // Extracción de datos básicos
     const title = document.getElementById('input-mision').value.trim();
     const categoria = document.getElementById('select-categoria').value;
     const rango = document.getElementById('select-rango').value;
+    
+    // Extracción táctica de botín
+    const cobresRaw = document.getElementById('input-cobres')?.value;
+    const cobres = parseInt(cobresRaw) || 0; // Si está vacío, la recompensa es 0
+    
+    const itemsRaw = document.getElementById('input-items')?.value || "";
+    // Transformamos el texto "Poción, Daga" en un array ["Poción", "Daga"]
+    const items = itemsRaw.split(',').map(i => i.trim()).filter(i => i.length > 0);
+
     if (title.length >= 3) {
-        await agregarMision(title, categoria, rango);
+        await agregarMision(title, categoria, rango, cobres, items);
         e.target.reset();
     }
 });
