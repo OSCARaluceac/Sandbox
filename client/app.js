@@ -189,35 +189,80 @@ function render() {
     actualizarEstiloBotonOrdenar();
 }
 
+// --- NUEVA OPERACIÓN TÁCTICA: UNIRSE A MISIÓN ---
+window.unirseMision = async (id) => {
+    toggleLoading(true);
+    try {
+        // Esta función deberá existir en tu client.js (Ej: POST /api/v1/tasks/:id/join)
+        await taskAPI.join(id); 
+        
+        // Recargamos el tablón para mostrar que ahora somos participantes
+        await loadTasks(); 
+    } catch (error) {
+        showErrorMessage("Interferencia: No se pudo registrar tu participación.");
+    } finally {
+        toggleLoading(false);
+    }
+};
+
+// --- MOTOR DE RENDERIZADO EVOLUCIONADO ---
 function crearMisionElemento(mision) {
     const el = document.createElement('div');
     const completada = mision.completed;
-    el.className = `card-mision p-4 border relative hover:scale-[1.01] transition-all duration-300 flex justify-between items-center group 
+    
+    // Extracción de datos del nuevo Schema de MongoDB
+    const cobres = mision.recompensas?.cobres || 0;
+    const items = mision.recompensas?.items || [];
+    const numParticipantes = mision.participantes?.length || 0;
+
+    el.className = `card-mision p-4 border relative hover:scale-[1.01] transition-all duration-300 flex flex-col gap-3 group 
         ${completada ? 'opacity-60 bg-stone-100 dark:bg-zinc-800/50 border-stone-400' : 'bg-white dark:bg-zinc-800 border-stone-200 ring-1 ring-gold/20'}`;
     
     el.innerHTML = `
-        <div class="relative z-10 flex-1 min-w-0 ${completada ? 'line-through decoration-gold' : ''}">
-            <span class="font-pixel text-[7px] text-gold uppercase tracking-tighter block truncate">
-                ${mision.categoria} | RANGO ${mision.rango}
-            </span>
-            <p class="text-base font-bold text-stone-800 dark:text-stone-100 mt-1 leading-snug">${mision.title}</p>
+        <div class="flex justify-between items-start w-full">
+            <div class="relative z-10 flex-1 min-w-0 ${completada ? 'line-through decoration-gold' : ''}">
+                <span class="font-pixel text-[7px] text-gold uppercase tracking-tighter block truncate">
+                    ${mision.categoria} | RANGO ${mision.rango}
+                </span>
+                <p class="text-base font-bold text-stone-800 dark:text-stone-100 mt-1 leading-snug">${mision.title}</p>
+            </div>
+            
+            <div class="card-mision-acciones flex gap-1.5 relative z-20 ml-3 shrink-0">
+                <button onclick="window.toggleMision('${mision.id || mision._id}')" 
+                    title="${completada ? 'Deshacer' : 'Completar y Repartir Botín'}"
+                    class="btn-accion px-3 py-2 border border-gold text-gold hover:bg-gold hover:text-white transition-all font-pixel text-[8px]">
+                    ${completada ? '↩' : '✓'}
+                </button>
+                <button onclick="window.editarMision('${mision.id || mision._id}')"
+                    title="Editar"
+                    class="btn-accion px-3 py-2 border border-stone-400 dark:border-stone-600 text-stone-500 dark:text-stone-400 hover:border-gold hover:text-gold transition-all font-pixel text-[8px]">
+                    ✎
+                </button>
+                <button onclick="window.eliminarMision('${mision.id || mision._id}')"
+                    title="Eliminar"
+                    class="btn-accion bg-red-500/10 text-red-500 border border-red-500 hover:bg-red-500 hover:text-white px-3 py-2 font-pixel text-[8px] transition-all">
+                    ✕
+                </button>
+            </div>
         </div>
-        <div class="card-mision-acciones flex gap-1.5 relative z-20 ml-3 shrink-0">
-            <button onclick="window.toggleMision('${mision.id}')" 
-                title="${completada ? 'Deshacer' : 'Completar'}"
-                class="btn-accion px-3 py-2 border border-gold text-gold hover:bg-gold hover:text-white transition-all font-pixel text-[8px]">
-                ${completada ? '↩' : '✓'}
-            </button>
-            <button onclick="window.editarMision('${mision.id}')"
-                title="Editar"
-                class="btn-accion px-3 py-2 border border-stone-400 dark:border-stone-600 text-stone-500 dark:text-stone-400 hover:border-gold hover:text-gold transition-all font-pixel text-[8px]">
-                ✎
-            </button>
-            <button onclick="window.eliminarMision('${mision.id}')"
-                title="Eliminar"
-                class="btn-accion bg-red-500/10 text-red-500 border border-red-500 hover:bg-red-500 hover:text-white px-3 py-2 font-pixel text-[8px] transition-all">
-                ✕
-            </button>
+
+        <div class="flex justify-between items-end w-full mt-2 pt-2 border-t border-stone-200 dark:border-stone-700">
+            <div class="flex flex-col gap-1">
+                <span class="font-pixel text-[7px] text-stone-500 dark:text-stone-400 uppercase">Recompensas:</span>
+                <div class="flex gap-2 text-xs font-bold text-amber-500">
+                    <span>🪙 ${cobres} Cobres</span>
+                    ${items.length > 0 ? `<span class="text-emerald-500">🗡️ ${items.length} Ítems</span>` : ''}
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-2">
+                <span class="font-pixel text-[7px] text-stone-500">Aliados: ${numParticipantes}</span>
+                <button onclick="window.unirseMision('${mision.id || mision._id}')" 
+                    ${completada ? 'disabled' : ''}
+                    class="bg-blue-600 hover:bg-blue-500 disabled:bg-stone-500 text-white px-3 py-1.5 font-pixel text-[8px] transition-all">
+                    ${completada ? 'CERRADA' : 'UNIRSE'}
+                </button>
+            </div>
         </div>
     `;
     return el;
