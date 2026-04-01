@@ -96,16 +96,28 @@
 
     <div class="w-full max-w-5xl 2xl:max-w-[1200px] border-4 border-wood dark:border-stone-800 bg-parchment dark:bg-zinc-900 shadow-2xl relative transition-all duration-500 ring-1 ring-wood/20 dark:ring-stone-700/40 ring-offset-2 ring-offset-parchment-light dark:ring-offset-zinc-950">
         
-        <header class="border-b-2 border-gold/30 p-6 flex justify-between items-center bg-white/40 dark:bg-black/20">
-            <h1 class="font-pixel text-[10px] md:text-xs text-wood dark:text-gold tracking-widest uppercase">TaskFlow // Gremio</h1>
-            <div class="flex items-center gap-3">
-                <!-- Botón Drawer: solo en móvil -->
-                <button id="btn-drawer" class="lg:hidden px-3 py-2 border-2 border-wood dark:border-gold hover:bg-gold/10 transition-all font-pixel text-[9px] text-wood dark:text-gold outline-none active:scale-95">
-                    ☰ FILTROS
-                </button>
-                <button id="theme-toggle" class="px-4 py-2 border-2 border-wood dark:border-gold hover:bg-gold hover:text-white dark:hover:bg-gold dark:hover:text-black transition-all duration-300 font-pixel text-[9px] hover:scale-105 active:scale-95 shadow-sm outline-none">
-                    CAMBIAR MODO
-                </button>
+        <header class="border-b-2 border-gold/30 p-4 lg:p-6 flex justify-between items-center bg-white/40 dark:bg-black/20">
+            <h1 class="font-pixel text-[10px] md:text-xs text-wood dark:text-gold tracking-widest uppercase mt-2 lg:mt-0">TaskFlow // Gremio</h1>
+            
+            <div class="flex items-center gap-3 lg:gap-6">
+                <div class="hidden sm:flex items-center gap-3 bg-white/60 dark:bg-black/40 px-3 py-1.5 border border-gold/30 shadow-sm">
+                    <div class="text-right">
+                        <p class="font-bold text-sm leading-tight">Niko</p>
+                        <p class="font-pixel text-[6px] lg:text-[7px] text-gold mt-1">RANGO S | 🪙 1500 Cobres</p>
+                    </div>
+                    <div class="w-8 h-8 lg:w-10 lg:h-10 bg-zinc-800 border border-gold overflow-hidden">
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Niko" alt="Avatar" class="w-full h-full object-cover">
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button id="btn-drawer" class="lg:hidden px-3 py-2 border-2 border-wood dark:border-gold hover:bg-gold/10 transition-all font-pixel text-[9px] text-wood dark:text-gold outline-none active:scale-95">
+                        ☰
+                    </button>
+                    <button id="theme-toggle" class="px-3 py-2 lg:px-4 lg:py-2 border-2 border-wood dark:border-gold hover:bg-gold hover:text-white dark:hover:bg-gold dark:hover:text-black transition-all duration-300 font-pixel text-[9px] hover:scale-105 active:scale-95 shadow-sm outline-none" title="Cambiar Visión">
+                        👁
+                    </button>
+                </div>
             </div>
         </header>
 
@@ -172,11 +184,25 @@
             </aside>
 
             <section class="p-8 bg-white/50 dark:bg-zinc-900/30">
-                <form id="form-mision" class="p-6 bg-stone-100 dark:bg-zinc-800 border border-stone-200 dark:border-stone-700 mb-10 shadow-inner rounded-sm">
+                <<form id="form-mision" class="p-6 bg-stone-100 dark:bg-zinc-800 border border-stone-200 dark:border-stone-700 mb-10 shadow-inner rounded-sm">
                     <div class="mb-4">
                         <input type="text" id="input-mision" placeholder="Título de la misión..." required 
                             class="w-full p-4 bg-white dark:bg-zinc-900 border border-stone-400 dark:border-stone-700 focus:ring-2 focus:ring-gold outline-none font-bold text-lg">
                     </div>
+                    
+                    <div class="flex flex-wrap gap-3 mb-4 border-b border-stone-300 dark:border-stone-600 pb-4">
+                        <div class="flex-1 min-w-[100px]">
+                            <label class="block font-pixel text-[6px] text-stone-500 mb-1">COBRES</label>
+                            <input type="number" id="input-cobres" placeholder="Ej: 100" min="0"
+                                class="w-full p-2 bg-white dark:bg-zinc-900 border border-stone-400 dark:border-stone-700 outline-none font-pixel text-[8px]">
+                        </div>
+                        <div class="flex-[2] min-w-[150px]">
+                            <label class="block font-pixel text-[6px] text-stone-500 mb-1">ÍTEMS (Separados por coma)</label>
+                            <input type="text" id="input-items" placeholder="Ej: Poción, Daga..."
+                                class="w-full p-2 bg-white dark:bg-zinc-900 border border-stone-400 dark:border-stone-700 outline-none text-sm">
+                        </div>
+                    </div>
+
                     <div class="flex flex-wrap gap-3">
                         <select id="select-categoria" class="flex-1 p-2 bg-white dark:bg-zinc-900 border border-stone-400 dark:border-stone-700 outline-none">
                             <option>Recolección</option><option>Exploración</option><option>Captura</option><option>Escolta</option><option>Caza</option>
@@ -188,6 +214,7 @@
                             PUBLICAR
                         </button>
                     </div>
+                    
                     <button type="button" id="btn-ordenar" onclick="window.ordenarPorPrioridad(this)" 
                         class="w-full mt-4 p-2 border-2 border-gold text-gold font-pixel text-[8px] 
                                hover:bg-gold/10 transition-all duration-200 shadow-md outline-none">
