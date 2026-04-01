@@ -1,48 +1,41 @@
 /**
- * TASK SERVICE - El Músculo del Gremio
- * Gestiona la lógica de negocio y la persistencia en memoria.
+ * TASK SERVICE - Evolución MongoDB
+ * La persistencia ahora es externa y asíncrona.
  */
+const Task = require('../models/Task'); // Importamos el modelo
 
-let tasks = []; // Nuestra persistencia temporal en el servidor
-
-const getAll = () => tasks;
-
-/**
- * Crea una nueva misión con metadatos de tiempo.
- */
-const create = (taskData) => {
-    const newTask = {
-        id: Date.now().toString(), // Generamos un ID único basado en tiempo
-        ...taskData,
-        completed: false,
-        createdAt: new Date()
-    };
-    tasks.push(newTask);
-    return newTask;
+const getAll = async () => {
+    // Buscamos todos los registros en el búnker de MongoDB
+    return await Task.find().sort({ createdAt: -1 });
 };
 
-/**
- * Actualiza el estado de una misión existente.
- * Lógica fundamental para la Fase 3.
- */
-const updateStatus = (id, completed) => {
-    const task = tasks.find(t => t.id === id);
-    if (!task) throw new Error('NOT_FOUND');
+const create = async (taskData) => {
+    // Creamos una nueva instancia basada en el esquema
+    const newTask = new Task(taskData);
+    return await newTask.save();
+};
+
+const updateStatus = async (id, completed) => {
+    // Buscamos por el ID de MongoDB y actualizamos solo el campo necesario
+    const task = await Task.findByIdAndUpdate(
+        id, 
+        { completed, updatedAt: new Date() }, 
+        { new: true } // Esto devuelve la misión ya actualizada
+    );
     
-    task.completed = completed;
-    task.updatedAt = new Date(); // Registramos el momento del éxito
+    if (!task) throw new Error('NOT_FOUND');
     return task;
 };
 
-/**
- * Elimina un registro del tablón.
- */
-const remove = (id) => {
-    const index = tasks.findIndex(t => t.id === id);
-    if (index === -1) throw new Error('NOT_FOUND');
-    
-    tasks.splice(index, 1);
+const remove = async (id) => {
+    // Eliminación definitiva del registro
+    const result = await Task.findByIdAndDelete(id);
+    if (!result) throw new Error('NOT_FOUND');
     return true;
+};
+
+const getAllByUser = async (userId) => {
+    return await Task.find({ userId }).sort({ createdAt: -1 });
 };
 
 module.exports = { getAll, create, updateStatus, remove };
