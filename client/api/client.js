@@ -1,27 +1,27 @@
 /**
- * API CLIENT - TASKFLOW (Rango S)
- * Gestiona la comunicación asíncrona con el servidor de Node.js.
+ * API CLIENT - TASKFLOW (Rango S) - Versión Corregida
+ * Protocolo de comunicación síncrona con el núcleo de MongoDB.
  */
 
-// Detección inteligente de punto de enlace
 const API_URL = window.location.hostname === 'localhost' 
     ? 'http://localhost:3000/api/v1/tasks' 
     : '/api/v1/tasks';
 
 export const taskAPI = {
     /**
-     * Sincroniza todas las misiones registradas.
+     * Sincroniza todas las misiones. 
+     * Nota: En el frontend, recuerda usar task._id para las claves.
      */
     async getAll() {
         const response = await fetch(API_URL);
-        if (!response.ok) throw new Error('Error al sincronizar con el servidor.');
+        if (!response.ok) throw new Error('Error de sincronización.');
         return await response.json();
     },
 
     /**
-     * Registra una nueva misión con su botín en el servidor central.
+     * Registra misión vinculada a un autor (ID de tu amigo).
      */
-    async create(title, categoria, rango, cobres = 0, items = []) {
+    async create(title, categoria, rango, autorId, cobres = 0, items = []) {
         const response = await fetch(API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -29,60 +29,61 @@ export const taskAPI = {
                 title, 
                 categoria, 
                 rango,
+                autorId, // Obligatorio según tu esquema
                 recompensas: { cobres, items }
             })
         });
-        if (!response.ok) throw new Error('No se pudo guardar la misión en el servidor.');
+        if (!response.ok) throw new Error('Fallo al registrar misión.');
         return await response.json();
     },
 
     /**
-     * Actualiza el estado de cumplimiento de una misión.
+     * Actualiza estado y procesa pago de cobres al usuario.
      */
-    async updateStatus(id, completed) {
-        const response = await fetch(`${API_URL}/${id}`, { 
+    async updateStatus(taskId, userId, completed) {
+        const response = await fetch(`${API_URL}/${taskId}/status`, { 
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ completed })
+            body: JSON.stringify({ userId, completed }) // Enviamos userId para la recompensa
         });
-        if (!response.ok) throw new Error('Error al actualizar el estado.');
+        if (!response.ok) throw new Error('Error al procesar cumplimiento.');
         return await response.json();
     },
 
     /**
-     * Modifica los metadatos completos de una misión (Edición).
+     * Une a un amigo a la lista de participantes.
      */
-    async update(id, data) {
-        const response = await fetch(`${API_URL}/${id}`, {
+    async join(taskId, userId) {
+        const response = await fetch(`${API_URL}/${taskId}/join`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId }) // Identifica quién se une
+        });
+        if (!response.ok) throw new Error('Fallo al reclutar aventurero.');
+        return await response.json();
+    },
+
+    /**
+     * Modificación integral de parámetros.
+     */
+    async update(taskId, data) {
+        const response = await fetch(`${API_URL}/${taskId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
         });
-        if (!response.ok) throw new Error('Error al modificar los parámetros del encargo.');
+        if (!response.ok) throw new Error('Error al modificar parámetros.');
         return await response.json();
     },
 
     /**
-     * Recluta al usuario activo para un encargo específico.
+     * Eliminación del registro por ID de MongoDB (_id).
      */
-    async join(id) {
-        // Enviaremos una señal POST a la ruta de participación
-        const response = await fetch(`${API_URL}/${id}/join`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' }
-        });
-        if (!response.ok) throw new Error('Interferencia al intentar unirse a la misión.');
-        return await response.json();
-    },
-
-    /**
-     * Elimina permanentemente una misión del registro.
-     */
-    async delete(id) {
-        const response = await fetch(`${API_URL}/${id}`, { 
+    async delete(taskId) {
+        const response = await fetch(`${API_URL}/${taskId}`, { 
             method: 'DELETE' 
         });
-        if (!response.ok) throw new Error('Error al eliminar el registro del servidor.');
+        if (!response.ok) throw new Error('Error al eliminar registro.');
         return true;
     }
 };
