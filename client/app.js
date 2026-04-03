@@ -6,7 +6,7 @@ import { taskAPI } from './api/client.js';
 
 // --- 1. ESTADO GLOBAL ---
 // ID temporal de Niko (debe coincidir con el de tu base de datos)
-const CURRENT_USER_ID = "65f1234567890abcdef12345"; 
+const CURRENT_USER_ID = "69cfe7e823a3cc5d16019fcb"; 
 
 async function loadUserData() {
     try {
@@ -65,32 +65,36 @@ async function loadTasks() {
 }
 
 async function agregarMision(title, categoria, rango, cobres, items) {
+    const autorId = document.getElementById('input-autor-id').value; // Chip de rastreo
     toggleLoading(true);
     try {
-        // La API ahora transmite el botín al servidor
-        const nueva = await taskAPI.create(title, categoria, rango, cobres, items);
+        const nueva = await taskAPI.create(title, categoria, rango, autorId, cobres, items);
         listaMisiones.push(nueva);
         render();
     } catch (error) {
-        showErrorMessage("Interferencia: No se pudo publicar el contrato con sus recompensas.");
+        showErrorMessage("Interferencia: No se pudo publicar el contrato.");
     } finally {
         toggleLoading(false);
     }
 }
 
 window.toggleMision = async (id) => {
-    const mision = listaMisiones.find(m => m.id === id);
+    const mision = listaMisiones.find(m => (m._id === id || m.id === id));
     if (!mision) return;
 
     const nuevoEstado = !mision.completed;
     toggleLoading(true);
     
     try {
-        await taskAPI.updateStatus(id, nuevoEstado);
+        // Enviamos el CURRENT_USER_ID para que el server procese la recompensa
+        await taskAPI.updateStatus(id, CURRENT_USER_ID, nuevoEstado);
         mision.completed = nuevoEstado;
+        
+        // Recargamos los datos del usuario para ver los nuevos cobres en el header
+        await loadUserData(); 
         render();
     } catch (error) {
-        showErrorMessage("Error al sincronizar el estado con el servidor.");
+        showErrorMessage("Error al reclamar recompensa.");
     } finally {
         toggleLoading(false);
     }
@@ -194,9 +198,9 @@ function render() {
         const p = { 'S': 5, 'A': 4, 'B': 3, 'C': 2, 'D': 1 };
         misionesParaMostrar.sort((a, b) => (p[b.rango] || 0) - (p[a.rango] || 0));
     } else {
-        misionesParaMostrar.sort((a, b) => b.id - a.id); 
+        // Ordenar por fecha de creación (Más recientes primero)
+        misionesParaMostrar.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); 
     }
-
     misionesParaMostrar.forEach(mision => {
         const cumpleFiltros = filtrosRango.has(mision.rango) && 
                               filtrosCategoria.has(mision.categoria);
@@ -479,4 +483,5 @@ document.addEventListener('DOMContentLoaded', () => {
     setupTheme();
     setupFiltros();
     loadTasks();
+    loadUserData();
 });
