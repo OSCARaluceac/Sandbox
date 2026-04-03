@@ -1,76 +1,58 @@
 const taskService = require('../services/task.service');
 
-/**
- * Obtiene todas las misiones del registro central.
- */
-const getTasks = (req, res) => {
-    const tasks = taskService.getAll();
+const getTasks = async (req, res) => {
+    const tasks = await taskService.getAll();
     res.status(200).json(tasks);
 };
 
-/**
- * Registra un nuevo contrato validando los parámetros del Gremio.
- */
-const createTask = (req, res) => {
-    // Extraemos todos los campos que envía el frontend
-    const { title, categoria, rango, priority } = req.body;
+const createTask = async (req, res) => {
+    const { title, categoria, rango, autorId, recompensas } = req.body;
 
-    // Validación defensiva estricta: No permitiremos datos corruptos
-    if (!title || typeof title !== 'string' || title.trim().length < 3) {
-        return res.status(400).json({ error: "El título es obligatorio (mínimo 3 caracteres)." });
-    }
-    
-    if (!categoria || !rango) {
-        return res.status(400).json({ error: "Categoría y Rango son campos obligatorios." });
+    // Validación táctica
+    if (!title || !autorId) {
+        return res.status(400).json({ error: "Datos insuficientes para publicar el contrato." });
     }
 
-    const newTask = taskService.create({ 
-        title, 
-        categoria, 
-        rango, 
-        priority: priority || 1 
-    });
-    
-    res.status(201).json(newTask);
+    try {
+        const newTask = await taskService.create({ 
+            title, categoria, rango, autorId, recompensas 
+        });
+        res.status(201).json(newTask);
+    } catch (error) {
+        res.status(500).json({ error: "Error al crear la misión en la base de datos." });
+    }
 };
 
-/**
- * Actualiza el estado de una misión (Completada/Pendiente).
- */
-const updateTaskStatus = (req, res) => {
+const updateTaskStatus = async (req, res) => {
     try {
         const { id } = req.params;
-        const { completed } = req.body;
+        const { userId, completed } = req.body; // Recibimos quién la completa para pagarle
 
-        // Validamos que el estado sea un booleano
-        if (typeof completed !== 'boolean') {
-            return res.status(400).json({ error: "El estado debe ser booleano (true/false)." });
-        }
-
-        const updatedTask = taskService.updateStatus(id, completed);
+        const updatedTask = await taskService.updateStatus(id, userId, completed);
         res.status(200).json(updatedTask);
     } catch (error) {
-        if (error.message === 'NOT_FOUND') {
-            return res.status(404).json({ error: "La misión especificada no existe." });
-        }
-        res.status(500).json({ error: "Fallo crítico en el sistema de actualización." });
+        res.status(500).json({ error: "Fallo al actualizar estado o repartir botín." });
     }
 };
 
-/**
- * Elimina un registro permanentemente.
- */
-const deleteTask = (req, res) => {
+const joinTask = async (req, res) => {
     try {
         const { id } = req.params;
-        taskService.remove(id);
-        res.status(204).send(); 
+        const { userId } = req.body;
+        const task = await taskService.join(id, userId);
+        res.status(200).json(task);
     } catch (error) {
-        if (error.message === 'NOT_FOUND') {
-            return res.status(404).json({ error: "La misión que intentas eliminar no existe." });
-        }
-        res.status(500).json({ error: "Error interno del servidor." });
+        res.status(500).json({ error: "No se pudo unir al equipo de la misión." });
     }
 };
 
-module.exports = { getTasks, createTask, updateTaskStatus, deleteTask };
+const deleteTask = async (req, res) => {
+    try {
+        await taskService.remove(req.params.id);
+        res.status(204).send(); 
+    } catch (error) {
+        res.status(500).json({ error: "Error al eliminar el registro." });
+    }
+};
+
+module.exports = { getTasks, createTask, updateTaskStatus, joinTask, deleteTask };

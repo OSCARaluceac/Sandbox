@@ -39,17 +39,45 @@ const loadingEl = document.getElementById('loading-state');
 const errorEl = document.getElementById('error-message');
 const errorText = document.getElementById('error-text');
 
+/**
+ * Controla la visibilidad del overlay de carga.
+ */
 function toggleLoading(show) {
     if (loadingEl) loadingEl.classList.toggle('hidden', !show);
 }
 
+/**
+ * Despliega una alerta de error en la zona inferior.
+ */
 function showErrorMessage(message) {
     if (!errorEl || !errorText) return;
+
     errorText.innerText = message;
     errorEl.classList.remove('hidden');
+    // Desaparece automáticamente tras 5 segundos
     setTimeout(() => errorEl.classList.add('hidden'), 5000);
 }
 
+/**
+ * Despliega una notificación de éxito con estética de Gremio.
+ * Reemplaza a la versión emerald para mantener consistencia visual.
+ */
+function showSuccessMessage(text) {
+    const successEl = document.createElement('div');
+    // Estilo Gold/Wood según tu tailwind.config
+    successEl.className = "fixed top-10 right-10 bg-zinc-900 border-2 border-gold p-4 shadow-[0_0_20px_rgba(197,160,40,0.4)] z-[300] animate-pulse rounded-sm";
+    
+    successEl.innerHTML = `
+        <div class="flex items-center gap-3">
+            <span class="text-gold text-lg">✨</span>
+            <p class="font-pixel text-[7px] text-gold uppercase tracking-widest leading-none">${text}</p>
+        </div>
+    `;
+    
+    document.body.appendChild(successEl);
+    // Se auto-elimina del DOM tras 3.5 segundos
+    setTimeout(() => successEl.remove(), 3500);
+}
 // --- 3. OPERACIONES ASÍNCRONAS (CONEXIÓN BACKEND) ---
 
 async function loadTasks() {
@@ -65,14 +93,16 @@ async function loadTasks() {
 }
 
 async function agregarMision(title, categoria, rango, cobres, items) {
-    const autorId = document.getElementById('input-autor-id').value; // Chip de rastreo
+    const autorId = document.getElementById('input-autor-id').value;
     toggleLoading(true);
     try {
         const nueva = await taskAPI.create(title, categoria, rango, autorId, cobres, items);
         listaMisiones.push(nueva);
         render();
+        // Notificación de Rango S
+        showSuccessMessage("Nuevo encargo publicado con éxito.");
     } catch (error) {
-        showErrorMessage("Interferencia: No se pudo publicar el contrato.");
+        showErrorMessage("Interferencia: El contrato no pudo ser registrado.");
     } finally {
         toggleLoading(false);
     }
@@ -86,15 +116,17 @@ window.toggleMision = async (id) => {
     toggleLoading(true);
     
     try {
-        // Enviamos el CURRENT_USER_ID para que el server procese la recompensa
         await taskAPI.updateStatus(id, CURRENT_USER_ID, nuevoEstado);
         mision.completed = nuevoEstado;
         
-        // Recargamos los datos del usuario para ver los nuevos cobres en el header
-        await loadUserData(); 
+        if (nuevoEstado) {
+            showSuccessMessage(`¡Misión lograda! Botín transferido a tu cuenta.`);
+        }
+        
+        await loadUserData(); // Actualiza tu Header con los nuevos cobres
         render();
     } catch (error) {
-        showErrorMessage("Error al reclamar recompensa.");
+        showErrorMessage("Error al procesar el pago de la recompensa.");
     } finally {
         toggleLoading(false);
     }
@@ -105,10 +137,11 @@ window.eliminarMision = async (id) => {
     toggleLoading(true);
     try {
         await taskAPI.delete(id);
-        listaMisiones = listaMisiones.filter(m => m.id !== id);
+        listaMisiones = listaMisiones.filter(m => (m._id !== id && m.id !== id));
         render();
+        showSuccessMessage("Registro eliminado permanentemente.");
     } catch (error) {
-        showErrorMessage("No se pudo eliminar la misión del servidor.");
+        showErrorMessage("No se pudo purgar la misión del servidor.");
     } finally {
         toggleLoading(false);
     }
@@ -485,3 +518,16 @@ document.addEventListener('DOMContentLoaded', () => {
     loadTasks();
     loadUserData();
 });
+
+async function loadTasks() {
+    toggleLoading(true);
+    try {
+        listaMisiones = await taskAPI.getAll();
+        render();
+        // Opcional: showSuccessMessage("Tablón sincronizado"); 
+    } catch (error) {
+        showErrorMessage("Fallo de comunicación con el núcleo del Gremio.");
+    } finally {
+        toggleLoading(false);
+    }
+}
