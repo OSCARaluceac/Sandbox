@@ -5,6 +5,30 @@
 import { taskAPI } from './api/client.js';
 
 // --- 1. ESTADO GLOBAL ---
+// ID temporal de Niko (debe coincidir con el de tu base de datos)
+const CURRENT_USER_ID = "65f1234567890abcdef12345"; 
+
+async function loadUserData() {
+    try {
+        // Asumiendo que crearás esta ruta: GET /api/v1/users/:id
+        const user = await fetch(`http://localhost:3000/api/v1/users/${CURRENT_USER_ID}`).then(r => r.json());
+        
+        document.getElementById('user-name').textContent = user.username;
+        document.getElementById('user-rank').textContent = `RANGO ${user.rango}`;
+        document.getElementById('user-cobres').textContent = user.cobres;
+        
+        // Renderizar inventario
+        const invCont = document.getElementById('user-inventory');
+        invCont.innerHTML = user.inventario.map(item => 
+            `<span class="bg-stone-200 dark:bg-zinc-800 px-1 border border-stone-400 text-[5px]">${item}</span>`
+        ).join('');
+        
+        // Inyectar ID en el hidden input del form
+        document.getElementById('input-autor-id').value = user._id;
+    } catch (e) {
+        console.error("No se pudo cargar el perfil del aventurero.");
+    }
+}
 let listaMisiones = []; 
 const filtrosRango = new Set(['D', 'C', 'B', 'A', 'S']);
 const filtrosCategoria = new Set(['Recolección', 'Exploración', 'Captura', 'Escolta', 'Caza']);
