@@ -525,15 +525,3 @@ document.addEventListener('DOMContentLoaded', () => {
     loadUserData();
 });
 
-async function loadTasks() {
-    toggleLoading(true);
-    try {
-        listaMisiones = await taskAPI.getAll();
-        render();
-        // Opcional: showSuccessMessage("Tablón sincronizado"); 
-    } catch (error) {
-        showErrorMessage("Fallo de comunicación con el núcleo del Gremio.");
-    } finally {
-        toggleLoading(false);
-    }
-}

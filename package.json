@@ -1,20 +1,22 @@
 {
   "name": "taskflow-gremio",
   "version": "1.0.0",
-  "description": "Servidor de misiones para el Gremio de Aventureros",
+  "description": "Sistema de Gestión de Misiones - Gremio de Aventureros",
   "main": "server/src/index.js",
   "scripts": {
-  "start": "node server/src/index.js",
-  "dev": "nodemon server/src/index.js"
+    "start": "node server/src/index.js",
+    "dev": "nodemon server/src/index.js"
   },
+  "keywords": [],
+  "author": "Niko",
+  "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
-    "mongodb": "^7.1.1",
-    "mongoose": "^9.3.3"
+    "mongoose": "^8.0.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.14"
+    "nodemon": "^3.1.0"
   }
 }
